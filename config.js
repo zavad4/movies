@@ -8,7 +8,7 @@ const TOKEN_SECRET = process.env.TOKEN_SECRET;
 const state = {
     sessions: [],
 }
-console.log(postgre);
+
 module.exports = {
     postgre,
     TOKEN_SECRET,
