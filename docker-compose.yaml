@@ -1,0 +1,13 @@
+version: '2'
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      DATABASE: ${database}
+      POSTGRE_USER: ${postgre_user}
+      PASSWORD: ${password}
+      DB_HOST: ${host}
+      
