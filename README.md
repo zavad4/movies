@@ -1,4 +1,4 @@
-# movies-server
+# movies-api
 
 ## Run project locally:
 1. Create .env file from env.example.
