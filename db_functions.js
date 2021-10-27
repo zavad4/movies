@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const UUID = require('uuid-int');
 const generator = UUID(0);
 
+
 const { Movies, Actors, Users} = require('./db/db.js');
 const config = require('./config');
 
@@ -48,6 +49,27 @@ async function checkName(name) {
     if (!actor.length) return true;
 }
 
+async function checkTitle(title) {
+    const movie=  await Movies.findAll({
+        where: {
+            title,
+        }
+    });
+    if (!movie.length) return true;
+}
+
+const movie = {
+    "title": "Casablanca",
+    "year": 1942,
+    "format": "DVD",
+    "actors": [
+        "Humphrey Bogartt",
+        "Ingrid Bergman",
+        "Claude Rains",
+        "Peter Lorre"
+    ]
+};
+
 async function addActor(name) {
     let actor = {};
     if(await checkName(name)) {
@@ -73,15 +95,17 @@ async function getActorInfo(id) {
 
 async function addMovie(data) {
     const {title, year, format} = data;
-    const names = data.actors;
-    const actorsInfo = await Promise.all(names.map(async (name) => (await addActor(name))));
-    data.actors = actorsInfo.map(x => x.id);
-    const movie = (await Movies.create({ 
-        id: generator.uuid(), 
-        ...data,
-    })).dataValues;
-    movie.actors = actorsInfo;
-    return movie;
+    if (await checkTitle(title)) {
+        const names = data.actors;
+        const actorsInfo = await Promise.all(names.map(async (name) => (await addActor(name))));
+        data.actors = actorsInfo.map(x => x.id);
+        const movie = (await Movies.create({ 
+            id: generator.uuid(), 
+            ...data,
+        })).dataValues;
+        movie.actors = actorsInfo;
+        return movie;
+    }
 }
 
 async function deleteMovie(id) {

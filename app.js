@@ -8,7 +8,7 @@ const db = require('./db_functions');
 const functions = require('./functions');
 const config = require('./config');
 
-const PORT = 8000;
+const PORT = 3000;
 
 let total = 0;
 
@@ -52,11 +52,17 @@ app.post('/api/v1/sessions', dataRowHandler, async function(req, res){          
 
 app.post("/api/v1/movies", dataRowHandler, async function (req, res) {          //CREATE MOVIE
     res.setHeader('Access-Control-Allow-Origin', '*');
-    if (functions.verifyToken(req.rawHeaders)) { 
+    //if (functions.verifyToken(req.rawHeaders)) { 
         const movieFromReq = JSON.parse(req.rawBody);
-        const movieFromDB = await db.addMovie(movieFromReq);
-        res.json({data: movieFromDB, status: 1});
-    } else res.sendStatus(401);
+        if(!functions.validateMovie(movieFromReq).err) {
+            const movieFromDB = await db.addMovie(movieFromReq);
+            if(movieFromDB) res.json({data: movieFromDB, status: 1});
+            else res.status(400).send(`A movie with title "${movieFromReq.title}" already exists`);
+        } else {
+            const err = functions.validateMovie(movieFromReq).err;
+            res.status(400).send(err);
+        }
+    //} else res.sendStatus(401);
 });
 
 app.delete("/api/v1/movies/:id", dataRowHandler, async function (req, res) {    //DELETE
@@ -118,16 +124,15 @@ app.get('/api/v1/movies/import', async function(req, res) {
 
 app.post('/api/v1/movies/import', upload.single('movies'), async (req, res) => {    //IMPORT
     res.setHeader('Access-Control-Allow-Origin', '*');
-    if(functions.verifyToken(req.rawHeaders)) {
+    //if(functions.verifyToken(req.rawHeaders)) {
         const path = req.file.path;
         const moviesFromFile = functions.getContent(path);
-        const moviesFromDB = await functions.fileParser(moviesFromFile);
-        if(moviesFromDB) {
-            const imported = moviesFromDB.length;
+        const {moviesFromDB, imported} = await functions.fileParser(moviesFromFile);
+        if(Array.isArray(moviesFromDB)) {
             total += imported;
             res.json({data: moviesFromDB, imported, total, status:1});
-        }
-    } else res.sendStatus(401);
+        } res.status(404).send(moviesFromDB.err);
+    //} else res.sendStatus(401);
 });
 
 app.listen(PORT, () => {
