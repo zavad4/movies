@@ -58,18 +58,6 @@ async function checkTitle(title) {
     if (!movie.length) return true;
 }
 
-const movie = {
-    "title": "Casablanca",
-    "year": 1942,
-    "format": "DVD",
-    "actors": [
-        "Humphrey Bogartt",
-        "Ingrid Bergman",
-        "Claude Rains",
-        "Peter Lorre"
-    ]
-};
-
 async function addActor(name) {
     let actor = {};
     if(await checkName(name)) {
@@ -95,7 +83,7 @@ async function getActorInfo(id) {
 
 async function addMovie(data) {
     const {title, year, format} = data;
-    if (await checkTitle(title)) {
+    if (title && await checkTitle(title)) {
         const names = data.actors;
         const actorsInfo = await Promise.all(names.map(async (name) => (await addActor(name))));
         data.actors = actorsInfo.map(x => x.id);
@@ -163,7 +151,7 @@ async function findMovieByTitle(title, sortParam = 'id', order = 'ASC', limit = 
         limit,
         offset,
     });
-    return movies.map( x => x.dataValues);//movie[0].dataValues;
+    return movies.map( x => x.dataValues);
 }
 
 async function findMovieByActor(name, sortParam = 'id', order = 'ASC', limit = 20, offset = 0) {

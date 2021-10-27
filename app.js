@@ -52,7 +52,7 @@ app.post('/api/v1/sessions', dataRowHandler, async function(req, res){          
 
 app.post("/api/v1/movies", dataRowHandler, async function (req, res) {          //CREATE MOVIE
     res.setHeader('Access-Control-Allow-Origin', '*');
-    //if (functions.verifyToken(req.rawHeaders)) { 
+    if (functions.verifyToken(req.rawHeaders)) {
         const movieFromReq = JSON.parse(req.rawBody);
         if(!functions.validateMovie(movieFromReq).err) {
             const movieFromDB = await db.addMovie(movieFromReq);
@@ -62,7 +62,7 @@ app.post("/api/v1/movies", dataRowHandler, async function (req, res) {          
             const err = functions.validateMovie(movieFromReq).err;
             res.status(400).send(err);
         }
-    //} else res.sendStatus(401);
+    } else res.sendStatus(401);
 });
 
 app.delete("/api/v1/movies/:id", dataRowHandler, async function (req, res) {    //DELETE
@@ -124,15 +124,15 @@ app.get('/api/v1/movies/import', async function(req, res) {
 
 app.post('/api/v1/movies/import', upload.single('movies'), async (req, res) => {    //IMPORT
     res.setHeader('Access-Control-Allow-Origin', '*');
-    //if(functions.verifyToken(req.rawHeaders)) {
+    if(functions.verifyToken(req.rawHeaders)) {
         const path = req.file.path;
         const moviesFromFile = functions.getContent(path);
-        const {moviesFromDB, imported} = await functions.fileParser(moviesFromFile);
+        const {moviesFromDB, imported} = (await functions.fileParser(moviesFromFile));
         if(Array.isArray(moviesFromDB)) {
             total += imported;
             res.json({data: moviesFromDB, imported, total, status:1});
-        } res.status(404).send(moviesFromDB.err);
-    //} else res.sendStatus(401);
+        } else res.status(404).send('Wrong file format');
+    } else res.sendStatus(401);
 });
 
 app.listen(PORT, () => {
