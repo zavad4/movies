@@ -8,7 +8,7 @@ const db = require('./db_functions');
 const functions = require('./functions');
 const config = require('./config');
 
-const PORT = 3000;
+const PORT = 8000;
 
 let total = 0;
 
